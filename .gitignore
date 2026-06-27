@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+.cache/
+.rollup.cache/
+# Keep dist/ committed so HACS install works without a build step.
+!dist/
+!dist/*.js
