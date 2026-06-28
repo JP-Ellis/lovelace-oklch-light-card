@@ -1,0 +1,67 @@
+# git-cliff configuration
+# https://git-cliff.org/docs/configuration
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes follow [Keep a Changelog](https://keepachangelog.com/) and
+this project adheres to [Semantic Versioning](https://semver.org/).
+
+"""
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] — {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim | upper_first }}
+
+{% for commit in commits %}\
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}\
+{% if commit.breaking %}[**breaking**] {% endif %}\
+{{ commit.message | upper_first }}
+{% endfor %}\
+{% endfor %}\n
+"""
+footer = ""
+trim = true
+postprocessors = []
+
+[git]
+tag_pattern = "^v.*$"
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_preprocessors = [
+  # Strip the PR number GitHub appends when merging via the UI.
+  { pattern = '\s*\(#([0-9]+)\)$', replace = "" },
+  # Spell-check the commit message with typos (same tool as the prek hook).
+  { pattern = ".*", replace_command = "typos --write-changes -" },
+]
+commit_parsers = [
+  # Dependency bumps are noise in a user-facing changelog.
+  { message = "^(chore|fix)\\(deps.*\\)", skip = true },
+  # The release commit itself shouldn't appear in the next changelog.
+  { message = "^chore\\(release\\)", skip = true },
+  { group = "<!-- 00 -->🚀 Features", message = "^feat" },
+  { group = "<!-- 01 -->🐛 Bug Fixes", message = "^fix" },
+  { group = "<!-- 50 -->🚜 Refactor", message = "^refactor" },
+  { group = "<!-- 51 -->⚡ Performance", message = "^perf" },
+  { group = "<!-- 52 -->🎨 Styling", message = "^style" },
+  { group = "<!-- 60 -->📚 Documentation", message = "^docs" },
+  { group = "<!-- 80 -->🧪 Testing", message = "^test" },
+  { group = "<!-- 98 -->◀️ Revert", message = "^revert" },
+  { group = "<!-- 99 -->🛠️ Miscellaneous Tasks", message = "^chore" },
+  { group = "<!-- 99 -->🛠️ Miscellaneous Tasks", message = ".*" },
+]
+filter_commits = false
+topo_order = false
+sort_commits = "oldest"
+# The committed, minified bundle is a build artifact, not a source change.
+exclude_paths = ["dist/"]
+
+[remote.github]
+owner = "JP-Ellis"
+repo = "lovelace-oklch-light-card"
