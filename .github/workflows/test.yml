@@ -1,0 +1,80 @@
+---
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  completion:
+    name: Test completion check
+    runs-on: ubuntu-latest
+    needs:
+      - prek
+      - typecheck
+      - e2e
+    if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+    steps:
+      - run: exit 1
+
+  committed:
+    name: Committed
+    runs-on: ubuntu-latest
+    # Draft PRs (including the pending release PR) skip CI until marked ready.
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          fetch-depth: 0
+      - uses: crate-ci/committed@faeed42f2e10c244533a01525f13c4d8b6ce383f  # v1.1.11
+
+  prek:
+    name: Pre-commit hooks
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d  # v4.2.0
+      - name: Cache prek environments
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8  # v6
+        with:
+          path: ~/.cache/prek
+          key: prek-${{ hashFiles('prek.toml') }}
+      - name: Run hooks
+        run: prek run -a --show-diff-on-failure
+
+  typecheck:
+    name: Typecheck (tsc)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d  # v4.2.0
+      - name: Install dependencies
+        run: aube install --frozen-lockfile
+      - name: Run typecheck
+        run: mise run typecheck
+
+  e2e:
+    name: E2E tests (Playwright)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d  # v4.2.0
+      - name: Install dependencies
+        run: aube install --frozen-lockfile
+      - name: Run E2E tests
+        run: mise run e2e:test
