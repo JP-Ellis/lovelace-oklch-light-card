@@ -1,6 +1,6 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
-import { oklchToRgb255, oklchToRgb255Fast, type Oklch } from './color.js';
+import { css, html, LitElement, type PropertyValues } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
+import { type Oklch, oklchToRgb255, oklchToRgb255Fast } from "./color.js";
 
 const RASTER_W = 256;
 const RASTER_H = 128;
@@ -10,7 +10,7 @@ const RASTER_H = 128;
  * crosshair. Fires `picker-change` (live, on pointer move) and the parent is
  * expected to debounce service calls.
  */
-@customElement('oklch-picker')
+@customElement("oklch-picker")
 export class OklchPicker extends LitElement {
   /** Current OkLCh value. Two-way: parent updates this when state changes. */
   @property({ attribute: false }) value: Oklch = { l: 0.75, c: 0.1, h: 0 };
@@ -23,8 +23,8 @@ export class OklchPicker extends LitElement {
 
   @state() private _dragging = false;
 
-  @query('#plane') private _plane!: HTMLCanvasElement;
-  @query('#wrap') private _wrap!: HTMLDivElement;
+  @query("#plane") private readonly _plane!: HTMLCanvasElement;
+  @query("#wrap") private readonly _wrap!: HTMLDivElement;
 
   private _lastRenderedL = -1;
   private _lastRenderedCmax = -1;
@@ -107,15 +107,14 @@ export class OklchPicker extends LitElement {
   }
 
   protected updated(changed: PropertyValues): void {
-    if (changed.has('value') || changed.has('chromaMax')) {
-      if (
-        this.value.l !== this._lastRenderedL ||
-        this.chromaMax !== this._lastRenderedCmax
-      ) {
-        this._rasterise();
-      }
+    if (
+      (changed.has("value") || changed.has("chromaMax")) &&
+      (this.value.l !== this._lastRenderedL ||
+        this.chromaMax !== this._lastRenderedCmax)
+    ) {
+      this._rasterise();
     }
-    this.toggleAttribute('data-off', !this.lightOn);
+    this.toggleAttribute("data-off", !this.lightOn);
   }
 
   disconnectedCallback(): void {
@@ -124,27 +123,32 @@ export class OklchPicker extends LitElement {
   }
 
   private _rasterise(force = false): void {
-    if (!this._plane) return;
-    const l = this.value.l;
+    if (!this._plane) {
+      return;
+    }
+    const { l } = this.value;
     if (
       !force &&
       l === this._lastRenderedL &&
       this.chromaMax === this._lastRenderedCmax
-    )
+    ) {
       return;
+    }
     this._lastRenderedL = l;
     this._lastRenderedCmax = this.chromaMax;
 
     this._plane.width = RASTER_W;
     this._plane.height = RASTER_H;
-    const ctx = this._plane.getContext('2d');
-    if (!ctx) return;
+    const ctx = this._plane.getContext("2d");
+    if (!ctx) {
+      return;
+    }
     const img = ctx.createImageData(RASTER_W, RASTER_H);
-    const data = img.data;
-    for (let y = 0; y < RASTER_H; y++) {
+    const { data } = img;
+    for (let y = 0; y < RASTER_H; y += 1) {
       // y=0 top → high chroma; y=H-1 bottom → 0 chroma
       const c = ((RASTER_H - 1 - y) / (RASTER_H - 1)) * this.chromaMax;
-      for (let x = 0; x < RASTER_W; x++) {
+      for (let x = 0; x < RASTER_W; x += 1) {
         const h = (x / RASTER_W) * 360;
         const { r, g, b, inGamut } = oklchToRgb255Fast({ l, c, h });
         const i = (y * RASTER_W + x) * 4;
@@ -159,7 +163,7 @@ export class OklchPicker extends LitElement {
   }
 
   private _onL(e: Event): void {
-    const v = parseFloat((e.target as HTMLInputElement).value);
+    const v = Number.parseFloat((e.target as HTMLInputElement).value);
     this.value = { ...this.value, l: v };
     this._emit();
   }
@@ -171,7 +175,10 @@ export class OklchPicker extends LitElement {
   }
 
   private _onPointerMove(e: PointerEvent): void {
-    if (!this._dragging) return;
+    // biome-ignore lint/suspicious/noUnnecessaryConditions: _dragging is reactive state toggled by the pointerdown/up handlers at runtime
+    if (!this._dragging) {
+      return;
+    }
     this._updateFromPointer(e);
   }
 
@@ -196,7 +203,7 @@ export class OklchPicker extends LitElement {
 
   private _emit(): void {
     this.dispatchEvent(
-      new CustomEvent('picker-change', {
+      new CustomEvent("picker-change", {
         detail: { value: { ...this.value } },
         bubbles: true,
         composed: true,
@@ -241,7 +248,7 @@ export class OklchPicker extends LitElement {
 }
 
 function clamp(v: number, lo: number, hi: number): number {
-  return v < lo ? lo : v > hi ? hi : v;
+  return Math.min(Math.max(v, lo), hi);
 }
 
 function rgbVals(p: Oklch): string {
@@ -251,6 +258,6 @@ function rgbVals(p: Oklch): string {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'oklch-picker': OklchPicker;
+    "oklch-picker": OklchPicker;
   }
 }

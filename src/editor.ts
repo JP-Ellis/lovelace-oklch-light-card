@@ -1,30 +1,30 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import type { HomeAssistant, OklchCardConfig } from './types.js';
-import { DEFAULTS } from './types.js';
+import { css, html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import type { HomeAssistant, OklchCardConfig } from "./types.js";
+import { DEFAULTS } from "./types.js";
 
 const SCHEMA = [
   {
-    name: 'entity',
-    selector: { entity: { domain: 'light' } },
+    name: "entity",
+    selector: { entity: { domain: "light" } },
   },
-  { name: 'name', selector: { text: {} } },
+  { name: "name", selector: { text: {} } },
   {
-    name: 'lightness',
-    selector: { number: { min: 0, max: 1, step: 0.01, mode: 'slider' } },
-  },
-  {
-    name: 'chroma_max',
-    selector: { number: { min: 0.1, max: 0.5, step: 0.01, mode: 'slider' } },
+    name: "lightness",
+    selector: { number: { min: 0, max: 1, step: 0.01, mode: "slider" } },
   },
   {
-    name: 'debounce_ms',
-    selector: { number: { min: 0, max: 500, step: 10, mode: 'box' } },
+    name: "chroma_max",
+    selector: { number: { min: 0.1, max: 0.5, step: 0.01, mode: "slider" } },
   },
-  { name: 'power_on', selector: { boolean: {} } },
+  {
+    name: "debounce_ms",
+    selector: { number: { min: 0, max: 500, step: 10, mode: "box" } },
+  },
+  { name: "power_on", selector: { boolean: {} } },
 ];
 
-@customElement('oklch-light-card-editor')
+@customElement("oklch-light-card-editor")
 export class OklchLightCardEditor extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;
   @state() private _config?: OklchCardConfig;
@@ -42,7 +42,7 @@ export class OklchLightCardEditor extends LitElement {
   private _valueChanged(ev: CustomEvent): void {
     const value = ev.detail.value as OklchCardConfig;
     this.dispatchEvent(
-      new CustomEvent('config-changed', {
+      new CustomEvent("config-changed", {
         detail: { config: value },
         bubbles: true,
         composed: true,
@@ -50,27 +50,29 @@ export class OklchLightCardEditor extends LitElement {
     );
   }
 
-  private _computeLabel = (s: { name: string }): string => {
+  private readonly _computeLabel = (s: { name: string }): string => {
     switch (s.name) {
-      case 'entity':
-        return 'Entity (required)';
-      case 'name':
-        return 'Name';
-      case 'lightness':
-        return 'Default lightness (L)';
-      case 'chroma_max':
-        return 'Max chroma';
-      case 'debounce_ms':
-        return 'Debounce (ms)';
-      case 'power_on':
-        return 'Turn light on when picking';
+      case "entity":
+        return "Entity (required)";
+      case "name":
+        return "Name";
+      case "lightness":
+        return "Default lightness (L)";
+      case "chroma_max":
+        return "Max chroma";
+      case "debounce_ms":
+        return "Debounce (ms)";
+      case "power_on":
+        return "Turn light on when picking";
       default:
         return s.name;
     }
   };
 
   protected render() {
-    if (!this.hass || !this._config) return html``;
+    if (!(this.hass && this._config)) {
+      return html``;
+    }
     const data = {
       ...DEFAULTS,
       ...this._config,
@@ -89,6 +91,6 @@ export class OklchLightCardEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'oklch-light-card-editor': OklchLightCardEditor;
+    "oklch-light-card-editor": OklchLightCardEditor;
   }
 }
