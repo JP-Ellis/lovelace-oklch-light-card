@@ -1,6 +1,7 @@
 # SPEC — OkLCh Light Card v0.1.0
 
 ## Why OkLCh
+
 OkLCh is a perceptually uniform polar form of Oklab. Equal steps in L feel like
 equal steps in perceived lightness; equal steps in H feel like equal hue rotation;
 chroma is bounded but interpretable. This makes it much nicer for a 2D color
@@ -8,6 +9,7 @@ picker than HSV/HSL, where the perceived brightness and hue uniformity wobble
 badly across the wheel.
 
 ## Picker UX
+
 - **Plane**: 2D canvas, horizontal axis = hue (0..360, full wrap), vertical axis =
   chroma (0 at bottom, `chroma_max` at top). Lightness is held constant for the
   whole plane and controlled by a slider.
@@ -28,6 +30,7 @@ badly across the wheel.
   without re-painting.
 
 ## Color pipeline
+
 1. Read `light.<entity>` state. If `rgb_color` attribute present → convert sRGB
    to OkLCh via `culori`. Else if `hs_color` or `color_temp_kelvin` → convert
    appropriately (fall back via culori). Initial L from config if state is off
@@ -38,6 +41,7 @@ badly across the wheel.
    `power_on` is false, omit the call when the light is off.
 
 ## Config schema (JSON Schema-ish)
+
 ```yaml
 type: custom:oklch-light-card
 entity: light.foo          # required
@@ -51,7 +55,9 @@ power_on: true             # optional
 Validation happens in `setConfig` — throws on missing entity or wrong domain.
 
 ## Visual editor
+
 `ha-form` schema, in order:
+
 1. `entity` (selector: entity, domain `light`)
 2. `name` (text)
 3. `lightness` (number slider 0..1 step 0.01)
@@ -60,15 +66,17 @@ Validation happens in `setConfig` — throws on missing entity or wrong domain.
 6. `power_on` (boolean)
 
 ## Behaviour matrix
-| State change         | Reaction |
-|----------------------|----------|
-| Light turns on externally with new color | Crosshair moves to new color, L slider snaps to its L |
-| Light turns off      | Crosshair stays at last-known position, plane dimmed slightly via CSS |
-| User drags plane     | Debounced service call; crosshair follows pointer immediately |
-| L slider moves       | Plane re-rasterises; crosshair stays at same (H,C) |
-| Card resized         | Plane re-rasterises to new size |
+
+| State change                             | Reaction                                                              |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| Light turns on externally with new color | Crosshair moves to new color, L slider snaps to its L                 |
+| Light turns off                          | Crosshair stays at last-known position, plane dimmed slightly via CSS |
+| User drags plane                         | Debounced service call; crosshair follows pointer immediately         |
+| L slider moves                           | Plane re-rasterises; crosshair stays at same (H,C)                    |
+| Card resized                             | Plane re-rasterises to new size                                       |
 
 ## Out of scope (v0.1.0)
+
 - Color temperature picker / Kelvin mode
 - Brightness slider separate from L (we use L as both perceptual lightness and
   rough brightness proxy; HA brightness comes from rgb magnitude)

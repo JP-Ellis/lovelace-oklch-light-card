@@ -1,7 +1,8 @@
 # PLAN
 
 ## File structure
-```
+
+```text
 lovelace-oklch-light-card/
 ├── .github/workflows/release.yml
 ├── .gitignore
@@ -29,6 +30,7 @@ lovelace-oklch-light-card/
 ```
 
 ## Phases
+
 1. Spec / decisions / plan (this file) — done by coordinator.
 2. Scaffold + dependency install + build pipeline working with stub (one
    subagent).

@@ -5,7 +5,7 @@ A perceptually-uniform color picker card for Home Assistant lights.
 Most Lovelace color pickers use HSV or HSL, where equal pixel steps produce
 visually uneven hue and lightness changes. This card uses **OkLCh** — a polar
 form of the perceptually uniform Oklab color space — so dragging across the
-plane *feels* even, and out-of-gamut regions are visually faded so you can see
+plane _feels_ even, and out-of-gamut regions are visually faded so you can see
 what the bulb actually can and can't reproduce.
 
 ![placeholder screenshot](https://via.placeholder.com/640x320?text=OkLCh+Light+Card)
@@ -34,10 +34,12 @@ what the bulb actually can and can't reproduce.
    [release](https://github.com/JP-Ellis/lovelace-oklch-light-card/releases).
 2. Copy it to `<config>/www/community/lovelace-oklch-light-card/`.
 3. Add a Lovelace resource:
+
    ```yaml
    url: /local/community/lovelace-oklch-light-card/oklch-light-card.js
    type: module
    ```
+
 4. Reload the page.
 
 ## Usage

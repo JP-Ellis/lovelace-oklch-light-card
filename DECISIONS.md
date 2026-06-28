@@ -4,6 +4,7 @@ Recorded autonomously — the user is offline. Each entry is a question that wou
 normally have been asked, and the call we made.
 
 ## Stack
+
 - **Language**: TypeScript. Standard for HA custom cards; Lit's typings are
   excellent.
 - **Framework**: Lit 3.x. Aligns with HA's own frontend.
@@ -20,6 +21,7 @@ normally have been asked, and the call we made.
   v0.2.0.
 
 ## Picker
+
 - **Axis layout**: hue horizontal, chroma vertical. Considered hue vertical
   (radial-like) but horizontal hue is the standard reading direction and matches
   how HSL pickers in other tools (Photoshop, Figma) work, lowering the
@@ -36,6 +38,7 @@ normally have been asked, and the call we made.
   and rasterising on every L change must stay <16ms.
 
 ## Card
+
 - **Service**: always `light.turn_on` with `rgb_color`. Considered `xy_color`
   for better wide-gamut bulbs (e.g. Hue) but `rgb_color` is universally
   supported and HA handles the conversion internally per integration.
@@ -46,9 +49,11 @@ normally have been asked, and the call we made.
   deferral.
 
 ## Editor
+
 - Built on `ha-form` (HA's built-in schema-driven form). No standalone deps.
 
 ## Releases
+
 - **License**: MIT, copyright "JP-Ellis". Standard permissive license for HACS
   cards.
 - **Versioning**: semver from v0.1.0. CI builds + attaches `oklch-light-card.js`
@@ -58,6 +63,7 @@ normally have been asked, and the call we made.
   generated in v0.1.0.
 
 ## What we did NOT do
+
 - No GitHub push (no credentials).
 - No CI run locally (just commit the YAML).
 - No HA config touched.
