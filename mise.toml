@@ -1,0 +1,103 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+#:tombi lint.disabled = true
+
+[tools]
+"core:node" = "26"
+
+"aqua:cargo-bins/cargo-binstall" = "latest"
+"github:endevco/aube" = "1"
+"cargo:uv" = "0.11"
+
+"aqua:biomejs/biome" = "2"
+"aqua:tombi-toml/tombi" = "1"
+"aqua:orhun/git-cliff" = "2"
+"cargo:committed" = "1"
+"cargo:prek" = "0.4"
+"cargo:typos-cli" = "1"
+"pipx:yamlfix" = "1"
+
+[tasks.install]
+description = "Install JavaScript dependencies (aube)"
+run = "aube install"
+
+[tasks.format]
+description = "Check formatting (biome, tombi, yamlfix)"
+run = [
+  "biome format .",
+  "tombi format --check .",
+  # aube-lock.yaml is a generated lockfile owned by aube; don't reformat it.
+  "yamlfix -c {{cwd}}/.yamlfix.toml -e aube-lock.yaml --check .",
+]
+
+[tasks."format:fix"]
+description = "Apply formatting fixes (biome, tombi, yamlfix)"
+run = [
+  "biome format --write .",
+  "tombi format .",
+  "yamlfix -c {{cwd}}/.yamlfix.toml -e aube-lock.yaml .",
+]
+
+[tasks.lint]
+description = "Lint sources (biome, tombi)"
+run = [
+  "biome lint .",
+  "tombi lint .",
+]
+
+[tasks."lint:fix"]
+description = "Apply lint fixes (biome)"
+run = [
+  "biome lint --write .",
+]
+
+[tasks.check]
+description = "Run format and lint checks"
+run = { tasks = ["format", "lint"] }
+
+[tasks."check:fix"]
+description = "Apply all format and lint fixes"
+run = [
+  { task = "format:fix" },
+  { task = "lint:fix" },
+]
+
+[tasks.typecheck]
+description = "Type-check the project (tsc --noEmit)"
+run = "aubr tsc --noEmit"
+
+[tasks.build]
+description = "Build the card bundle into dist/ (rollup)"
+run = "aubr build"
+
+[tasks.watch]
+description = "Rebuild the card bundle on change (rollup watch)"
+run = "aubr watch"
+
+[tasks."e2e:install"]
+description = "Install Playwright browsers (Chromium in CI, full matrix locally)"
+run = [
+  """
+  if [ -n "$CI" ]; then
+    aubr playwright install --with-deps chromium
+  else
+    aubr playwright install chromium firefox webkit
+  fi
+  """,
+]
+
+[tasks."e2e:test"]
+description = "Run the Playwright end-to-end suite"
+depends = ["build", "e2e:install"]
+run = "aubr playwright test"
+
+[tasks.test]
+description = "Run the end-to-end tests (Playwright)"
+depends = ["e2e:test"]
+
+[tasks."release:prepare"]
+description = "Create/update the draft release PR (git-cliff + gh)"
+run = "node scripts/release.ts prepare"
+
+[tasks."release:tag"]
+description = "Tag the merged release from package.json (vX.Y.Z)"
+run = "node scripts/release.ts tag"

@@ -1,8 +1,28 @@
+# Node
 node_modules/
-.DS_Store
-*.log
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+
+# Build caches
 .cache/
 .rollup.cache/
+*.log
+
+# mise
+.mise.local.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
 # Keep dist/ committed so HACS install works without a build step.
 !dist/
 !dist/*.js
