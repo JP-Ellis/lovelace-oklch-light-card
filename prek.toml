@@ -33,7 +33,12 @@ hooks = [
 repo = "https://github.com/lyz-code/yamlfix"
 rev = "1.19.1"
 hooks = [
-  { id = "yamlfix", args = ["--config-file=.yamlfix.toml"] },
+  # aube-lock.yaml is a generated lockfile owned by aube; don't reformat it.
+  {
+    id = "yamlfix",
+    args = ["--config-file=.yamlfix.toml"],
+    exclude = "^aube-lock\\.yaml$"
+  },
 ]
 
 [[repos]]
