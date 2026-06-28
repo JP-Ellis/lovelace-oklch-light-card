@@ -1,0 +1,141 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+  "assist": { "actions": { "recommended": true } },
+  "formatter": { "useEditorconfig": true },
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    // dist/ is the committed, minified build artifact; never lint it.
+    "includes": ["**", "!dist"]
+  },
+  "linter": {
+    "rules": {
+      "preset": "all",
+      "correctness": {
+        // Source uses the TypeScript `.js`-extension import convention
+        // (`import './card.js'` → card.ts), and culori ships an exports map
+        // biome's resolver can't follow. rollup and tsc resolve both
+        // correctly; biome only produces false positives here.
+        "noUnresolvedImports": "off",
+        "useImportExtensions": "off"
+      },
+      "style": {
+        // Ternaries are the only conditional form available inside Lit `html`
+        // template expressions, and are idiomatic throughout the cards.
+        "noTernary": "off",
+        // Lit components export the component class and then augment
+        // HTMLElementTagNameMap in a trailing `declare global` block, so the
+        // export legitimately precedes other top-level statements.
+        "useExportsLast": "off",
+        // Object- and type-property names mirror external API contracts:
+        // Home Assistant frontend fields (entity_id, friendly_name, rgb_color,
+        // color_temp_kelvin, documentationURL) and light service data
+        // (power_on, chroma_max, debounce_ms, …). camelCase is still enforced
+        // everywhere else.
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "conventions": [
+              {
+                "selector": { "kind": "objectLiteralProperty" },
+                "match": ".*"
+              },
+              { "selector": { "kind": "typeProperty" }, "match": ".*" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Color-space and canvas math: 8-bit channel maxima (255), hue degrees
+      // (360), RGBA byte stride (4), percentage coordinates (100), and the
+      // gamut-fade alpha values are inherent constants that read more clearly
+      // inline than as named values.
+      "includes": ["src/color.ts", "src/picker.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noMagicNumbers": "off"
+          }
+        }
+      }
+    },
+    {
+      // Config files export a default config object by design.
+      "includes": ["**/*.config.ts", "**/*.config.mts", "**/*.config.mjs"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noRedundantDefaultExport": "off",
+            "useLiteralKeys": "off"
+          },
+          "correctness": {
+            "noNodejsModules": "off"
+          },
+          "style": {
+            "noDefaultExport": "off",
+            "noMagicNumbers": "off",
+            "noProcessEnv": "off"
+          }
+        }
+      }
+    },
+    {
+      // End-to-end test scaffolding (Playwright specs + the HTML fixture).
+      // Literal expected values, non-null assertions on known fixtures, node:
+      // imports, sequential awaits, inline regexes, `window` inside in-page
+      // callbacks, and plain hex colors in the fixture stylesheet are all fine
+      // here — this code never ships in the card bundle.
+      "includes": ["e2e/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          },
+          "correctness": {
+            "noNodejsModules": "off"
+          },
+          "performance": {
+            "noAwaitInLoops": "off",
+            "useTopLevelRegex": "off"
+          },
+          "style": {
+            "noMagicNumbers": "off",
+            "noNonNullAssertion": "off",
+            "noHexColors": "off",
+            "useGlobalThis": "off"
+          },
+          "suspicious": {
+            "noConsole": "off",
+            "noSkippedTests": "off"
+          }
+        }
+      }
+    },
+    {
+      // Release tooling: a CLI script that shells out to git/git-cliff/gh and
+      // logs progress. Console output is the interface, node: imports are
+      // inherent, the version-substitution regex is single-use, and the literal
+      // process exit code is not a "magic number" worth naming.
+      "includes": ["scripts/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noNodejsModules": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          },
+          "style": {
+            "noMagicNumbers": "off",
+            "noProcessEnv": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
+}

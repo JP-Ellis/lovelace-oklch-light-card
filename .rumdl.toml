@@ -1,0 +1,25 @@
+[global]
+# All rules enabled by default. Disable selectively below.
+enable = ["ALL"]
+disable = [
+  "MD013",
+  "MD033",
+  # Title-case enforcement mangles version strings ("v0.1.0" -> "V0.1.0") and
+  # acronyms ("gpg" -> "Gpg"); headings here are intentionally sentence-case.
+  "MD063",
+]
+
+[MD040]
+unknown-language-action = "error"
+
+[MD046]
+style = "fenced"
+
+[MD048]
+style = "backtick"
+
+[MD049]
+style = "underscore"
+
+[MD050]
+style = "asterisk"

@@ -1,0 +1,16 @@
+[files]
+extend-exclude = ["aube-lock.yaml", "dist/"]
+
+[default]
+extend-ignore-re = [
+  # Ignore lines that end with `# spellchecker:ignore`
+  "(?Rm)^.*(#|//)\\s*spellchecker:ignore$",
+  # Ignore the line after `# spellchecker:ignore-next-line`:
+  "(#|//)\\s*spellchecker:ignore-next-line\\n.*",
+  # Ignore blocks between `# spellchecker:off` and `# spellchecker:on`
+  "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on",
+]
+
+[default.extend-words]
+# "hass" is Home Assistant's standard object name, not a misspelling of "hash".
+hass = "hass"
