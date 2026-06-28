@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oklch-light-card — test fixture</title>
+    <style>
+      :root {
+        /* A few of the Home Assistant CSS custom properties the card reads, so
+           the fixture looks close to a real dashboard. */
+        --card-background-color: #1c1c1c;
+        --primary-text-color: #e1e1e1;
+        --primary-color: #6a3093;
+        --divider-color: rgba(255, 255, 255, 0.12);
+        --secondary-text-color: #9e9e9e;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #111;
+        color: var(--primary-text-color);
+        font-family: system-ui, sans-serif;
+      }
+      #card-host {
+        max-width: 480px;
+        margin: 0 auto;
+      }
+    </style>
+    <!-- The built bundle self-registers all the custom elements. -->
+    <script type="module" src="/dist/oklch-light-card.js"></script>
+  </head>
+  <body>
+    <div id="card-host"></div>
+    <script type="module">
+      const serviceCalls = [];
+
+      function makeHass(overrides) {
+        return {
+          states: {
+            "light.example": {
+              entity_id: "light.example",
+              state: "on",
+              attributes: {
+                friendly_name: "Living Room Lamp",
+                rgb_color: [255, 120, 40],
+                brightness: 200,
+              },
+            },
+          },
+          callService(domain, service, data) {
+            serviceCalls.push({ domain, service, data });
+            return Promise.resolve();
+          },
+          ...overrides,
+        };
+      }
+
+      async function doMount(config, hassOverrides) {
+        await customElements.whenDefined("oklch-light-card");
+        const host = document.getElementById("card-host");
+        host.replaceChildren();
+        serviceCalls.length = 0;
+        const el = document.createElement("oklch-light-card");
+        el.setConfig(config ?? { type: "oklch-light-card", entity: "light.example" });
+        el.hass = makeHass(hassOverrides);
+        host.appendChild(el);
+        await el.updateComplete;
+        return true;
+      }
+
+      // Serialize mounts so a test's explicit mount() always runs after the
+      // auto-mount below and leaves the final state, rather than racing it.
+      let pending = Promise.resolve(true);
+
+      // Test harness API, driven from Playwright via page.evaluate().
+      globalThis.__oklch = {
+        serviceCalls,
+        mount(config, hassOverrides) {
+          pending = pending.then(() => doMount(config, hassOverrides));
+          return pending;
+        },
+      };
+
+      // Auto-mount a default card so direct navigation shows something useful.
+      globalThis.__oklch.mount();
+    </script>
+  </body>
+</html>
