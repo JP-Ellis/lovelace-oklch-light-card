@@ -1,6 +1,6 @@
 {
   "name": "lovelace-oklch-light-card",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Perceptually-uniform OkLCh color picker card for Home Assistant lights.",
   "type": "module",
   "main": "dist/oklch-light-card.js",
